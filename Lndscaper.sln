@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31829.152
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lndscaper", "Lndscaper.csproj", "{18680FF6-4534-40FF-9707-462217F919AF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{18680FF6-4534-40FF-9707-462217F919AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18680FF6-4534-40FF-9707-462217F919AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18680FF6-4534-40FF-9707-462217F919AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18680FF6-4534-40FF-9707-462217F919AF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BF5539EF-F210-4159-BC5E-B6C61A42556B}
+	EndGlobalSection
+EndGlobal
