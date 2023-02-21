@@ -11,21 +11,32 @@ namespace Lndscaper
         {
             var dir = "./Test files";
             var lndFilter = "*.lnd";
-            Byte[] buffer = new Byte[Marshal.SizeOf(typeof(LndHeader))];
 
             var lndFiles = Directory.EnumerateFiles(dir, lndFilter);
 
             foreach (var lndFileName in lndFiles)
             {
-                Console.WriteLine($"Processing {lndFileName}.");
-
-                using var stream = File.Open(lndFileName, FileMode.Open);
-                using var reader = new BinaryReader(stream, Encoding.UTF8, false);
-                reader.Read(buffer, 0, buffer.Length);
-                var header = ArrayToStructure<LndHeader>(buffer);
-                Console.WriteLine($"There are {header.NumBlocks} blocks in the '{lndFileName}' header.");
-
+                ShowLndFileInfo(lndFileName);
             }
+        }
+
+        private static void ShowLndFileInfo(string lndFileName)
+        {
+            Console.WriteLine($"Processing {lndFileName}.");
+
+            Byte[] buffer = new Byte[Marshal.SizeOf(typeof(LndHeader))];
+
+            using var stream = File.Open(lndFileName, FileMode.Open);
+            using var reader = new BinaryReader(stream, Encoding.UTF8, false);
+            reader.Read(buffer, 0, buffer.Length);
+            var header = ArrayToStructure<LndHeader>(buffer);
+            Console.WriteLine($"NumBlocks: {header.NumBlocks}");
+            Console.WriteLine($"NumMaterials: {header.NumMaterials}");
+            Console.WriteLine($"NumCountries: {header.NumCountries}");
+            Console.WriteLine($"BlockSize: {header.BlockSize}");
+            Console.WriteLine($"MaterialSize: {header.MaterialSize}");
+            Console.WriteLine($"CountrySize: {header.CountrySize}");
+            Console.WriteLine($"NumLoResTextures: {header.NumLoResTextures}");
         }
 
         private unsafe struct LndHeader
