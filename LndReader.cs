@@ -10,40 +10,64 @@ namespace Lndscaper
     {
 
         const int CellsPerBlock = 17 * 17;
+        const int MapMaterialsPerCountry = 256;
+        const int ImagesPerMaterial = 256 * 256;
 
         public LndReader(Stream input, Encoding encoding, bool leaveOpen) : base(input, encoding, leaveOpen)
         {
         }
 
-        public Cell[] ReadCells(int numCells)
+        private T[] ReadStructArray<T>(int numItems)
         {
-            Cell[] cells = new Cell[numCells];
-            byte[] buffer = new byte[Marshal.SizeOf(typeof(Cell))];
-            for (var i = 0; i < numCells; i++)
+            T[] array = new T[numItems];
+            byte[] buffer = new byte[Marshal.SizeOf(typeof(T))];
+            for (var i = 0; i < numItems; i++)
             {
-                // Console.WriteLine($"Reading Cell of size {Marshal.SizeOf(typeof(Cell))} at offset {BaseStream.Position}");
-                base.Read(buffer, 0, buffer.Length);
-                cells[i] = Binary.ArrayToStructure<Cell>(buffer);
+                Read(buffer, 0, buffer.Length);
+                array[i] = Binary.ArrayToStructure<T>(buffer);
             }
-            return cells;
+            return array;
         }
 
-        public Block[] ReadBlocks(int numBlocks, int offset = 0)
+        public Block[] ReadBlocks(int numBlocks)
         {
             var blocks = new Block[numBlocks];
             byte[] buffer = new byte[Marshal.SizeOf(typeof(BlockData))];
 
-            base.BaseStream.Seek(offset, SeekOrigin.Begin);
-
             for (var i = 0; i < numBlocks; i++)
             {
-                blocks[i].Cells = ReadCells(CellsPerBlock);
-                // Console.WriteLine($"Reading BlockData of size {Marshal.SizeOf(typeof(BlockData))} at offset {BaseStream.Position}");
-                base.Read(buffer, 0, buffer.Length);
+                blocks[i].Cells = ReadStructArray<Cell>(CellsPerBlock);
+                Read(buffer, 0, buffer.Length);
                 blocks[i].BlockData = Binary.ArrayToStructure<BlockData>(buffer);
             }
 
             return blocks;
+        }
+
+        public Country[] ReadCountries(int numCountries)
+        {
+            var countries = new Country[numCountries];
+
+            for (var i = 0; i < numCountries; i++)
+            {
+                countries[i].TerrainType = ReadUInt32();
+                countries[i].MapMaterials = ReadStructArray<MapMaterial>(MapMaterialsPerCountry);
+            }
+
+            return countries;
+        }
+
+        public Material[] ReadMaterials(int numMaterials)
+        {
+            var materials = new Material[numMaterials];
+
+            for (var i = 0; i < numMaterials; i++)
+            {
+                materials[i].TerrainType = ReadUInt16();
+                materials[i].Images = ReadStructArray<UInt16>(ImagesPerMaterial);
+            }
+
+            return materials;
         }
     }
 }

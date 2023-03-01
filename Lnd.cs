@@ -42,26 +42,87 @@ namespace Lndscaper
 
             // at this stage offset is at the end of the lo-res textures data
 
-            Console.WriteLine("");
-
-            Console.WriteLine("Blocks:");
-
-            Block[] blocks;
-            var numberOfBlocks = header.NumBlocks - 1;
             using (var stream = File.Open(lndFileName, FileMode.Open))
             {
                 using (var reader = new LndReader(stream, Encoding.UTF8, false))
                 {
-                    blocks = reader.ReadBlocks(numberOfBlocks, offset);
+
+                    reader.BaseStream.Seek(offset, SeekOrigin.Begin);
+
+                    Console.WriteLine("");
+
+                    Console.WriteLine("Blocks:");
+
+                    Block[] blocks;
+                    var numberOfBlocks = header.NumBlocks - 1;
+
+                    blocks = reader.ReadBlocks(numberOfBlocks);
+
+
+                    /*
+                    for (var i = 0; i < numberOfBlocks; i++)
+                    {
+                        Console.WriteLine($"Block[{i}]: Index = {blocks[i].BlockData.Index}, coords = {blocks[i].BlockData.BlockX}, {blocks[i].BlockData.BlockY}");
+                    }
+                    */
+
+                    ShowMap(blocks);
+
+                    Console.WriteLine("");
+                    Console.WriteLine($"Current offset = {reader.BaseStream.Position}");
+                    Console.WriteLine("");
+
+                    Console.WriteLine("Countries:");
+
+                    Country[] countries;
+                    var numberOfCountries = header.NumCountries;
+
+                    countries = reader.ReadCountries(numberOfCountries);
+
+                    for (var i = 0; i < numberOfCountries; i++)
+                    {
+                        Console.WriteLine($"Country[{i}]: TerrainType = {countries[i].TerrainType}");
+                    }
+
+                    Console.WriteLine("");
+                    Console.WriteLine($"Current offset = {reader.BaseStream.Position}");
+                    Console.WriteLine("");
+
+                    Console.WriteLine("Materials:");
+
+                    Material[] materials;
+                    var numberOfMaterials = header.NumMaterials;
+
+                    materials = reader.ReadMaterials(numberOfMaterials);
+
+                    for (var i = 0; i < numberOfMaterials; i++)
+                    {
+                        Console.WriteLine($"Material[{i}]: TerrainType = {materials[i].TerrainType}");
+                    }
+
+                    Console.WriteLine("");
+                    Console.WriteLine($"Current offset = {reader.BaseStream.Position}");
+                    Console.WriteLine("");
+
+                    Console.WriteLine("Noise map:");
+
+                    byte[] noiseMap = new byte[256 * 256];
+                    reader.Read(noiseMap, 0, noiseMap.Length);
+
+                    Console.WriteLine("");
+                    Console.WriteLine($"Current offset = {reader.BaseStream.Position}");
+                    Console.WriteLine("");
+
+                    Console.WriteLine("Bump map:");
+
+                    byte[] bumpMap = new byte[256 * 256];
+                    reader.Read(bumpMap, 0, bumpMap.Length);
+
+                    Console.WriteLine("");
+                    Console.WriteLine($"Current offset = {reader.BaseStream.Position}");
+
                 }
             }
-
-            for (var i = 0; i < numberOfBlocks; i++)
-            {
-                Console.WriteLine($"Block[{i}]: Index = {blocks[i].BlockData.Index}, coords = {blocks[i].BlockData.BlockX}, {blocks[i].BlockData.BlockY}");
-            }
-
-            ShowMap(blocks);
 
         }
 
