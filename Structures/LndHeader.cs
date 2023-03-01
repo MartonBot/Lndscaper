@@ -4,7 +4,7 @@ namespace Lndscaper
 {
     unsafe struct LndHeader
     {
-        public Int32 NumBlocks;
+        public Int32 NumBlocks; // number of blocks = NumBlocks - 1 (the number of blocks is incremented by 1 when crafting a LND file for some reason)
         public fixed byte BlockIndex[32 * 32];
         public Int32 NumMaterials;
         public Int32 NumCountries;

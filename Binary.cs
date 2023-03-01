@@ -24,7 +24,7 @@ namespace Lndscaper
             return ArrayToStructure<T>(buffer);
         }
 
-        static T ArrayToStructure<T>(byte[] bytes)
+        public static T ArrayToStructure<T>(byte[] bytes)
         {
             GCHandle iHandle = default;
             T rTarget;
