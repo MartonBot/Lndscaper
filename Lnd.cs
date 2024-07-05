@@ -22,7 +22,7 @@ namespace Lndscaper
             Console.WriteLine("");
 
             Console.WriteLine($"LND header size: {sizeof(LndHeader)} bytes");
-            Console.WriteLine($"Lo-res textures: {header.NumLoResTextures} x ({sizeof(LoResTextureHeader)} + N) bytes");
+            Console.WriteLine($"Lo-res textures: {header.NumLoResTextures} x ({sizeof(LoResTextureHeader)} + (lo-res texture data size)) bytes");
 
             int offset = sizeof(LndHeader);
 
@@ -35,7 +35,14 @@ namespace Lndscaper
             {
                 loResTextureHeader = Binary.FileToStructure<LoResTextureHeader>(lndFileName, offset);
                 offset += sizeof(LoResTextureHeader) + (loResTextureHeader.Size - 4); // after the lo-res header come (loResTextureHeader.Size - 4) of DirectDraw stuff
-                Console.WriteLine($"Lo-res texture[{i}]: ID = {loResTextureHeader.ID}, size: {(loResTextureHeader.Size - 4)} bytes, {loResTextureHeader.NumSubTextures} sub-textures");
+                // somehow, the value that is read for the size of the lo-res texture data is not accurate, you have to remove 4 bytes from it. I guess just accept that
+                Console.WriteLine($"Lo-res texture[{i}]:");
+                // Console.WriteLine($"\ttexture pointer == {loResTextureHeader.Texture}");
+                // Console.WriteLine($"\tmaterial pointer == {loResTextureHeader.Material}");
+                Console.WriteLine($"\tnumber of sub-textures == {loResTextureHeader.NumSubTextures}");
+                Console.WriteLine($"\tlo-res texture ID == {loResTextureHeader.ID}");
+                Console.WriteLine($"\tlo-res texture size == {(loResTextureHeader.Size - 4)} bytes (subtracted 4 bytes from read value to obtain the size of the lo-res texture data)");
+                Console.WriteLine("");
             }
 
             Console.WriteLine($"Current offset = {offset}");
@@ -54,7 +61,7 @@ namespace Lndscaper
                     Console.WriteLine("Blocks:");
 
                     Block[] blocks;
-                    var numberOfBlocks = header.NumBlocks - 1;
+                    var numberOfBlocks = header.NumBlocks - 1; // there is one less block than advertised
 
                     blocks = reader.ReadBlocks(numberOfBlocks);
 
@@ -66,7 +73,8 @@ namespace Lndscaper
                     }
                     */
 
-                    ShowMap(blocks);
+                    // ShowMap(blocks);
+                    ShowMap(blocks, b => b.BlockData.Clipped);
 
                     Console.WriteLine("");
                     Console.WriteLine($"Current offset = {reader.BaseStream.Position}");
@@ -126,7 +134,7 @@ namespace Lndscaper
 
         }
 
-        private static void ShowMap(Block[] blocks)
+        private static void ShowMap(Block[] blocks, Func<Block, object> blockProperty = null)
         {
             Block?[,] sortedBlocks = new Block?[32, 32];
 
@@ -145,12 +153,20 @@ namespace Lndscaper
                     }
                     else
                     {
-                        Console.Write($"{sortedBlocks[i, j].Value.BlockData.Index:d3} ");
+                        if (blockProperty != null)
+                        {
+                            Console.Write($"{blockProperty(sortedBlocks[i, j].Value):d3} ");
+                        }
+                        else
+                        {
+                            Console.Write($"{sortedBlocks[i, j].Value.BlockData.Index:d3} ");
+                        }
                     }
                 }
-                Console.WriteLine("");
+                Console.WriteLine();
             }
         }
+
 
     }
 }
