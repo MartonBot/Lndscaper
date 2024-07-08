@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 
 namespace Lndscaper
 {
@@ -65,6 +66,15 @@ namespace Lndscaper
 
                     blocks = reader.ReadBlocks(numberOfBlocks);
 
+                    // dump block data to JSON
+                    var block2 = blocks[1];
+                    File.WriteAllText("./Test files/land1.json", JsonSerializer.Serialize<Block>(block2, new JsonSerializerOptions
+                    {
+                        IncludeFields = true,
+                        WriteIndented = true
+                    }));
+
+
 
                     /*
                     for (var i = 0; i < numberOfBlocks; i++)
@@ -73,27 +83,47 @@ namespace Lndscaper
                     }
                     */
 
-                    // ShowMap(blocks);
-                    ShowMap(blocks, b => b.BlockData.Clipped);
+                    Console.WriteLine("Blocks: (counting from 1)");
+                    // ShowMap(blocks, b => b.Cells[0].LandProperties.ToString("X"), 5);
+                    // ShowMap(blocks, b => $"{b.BlockData.BlockX}:{b.BlockData.BlockY}", 7);
+                    ShowMap(blocks);
+
+                    // Func<Cell, object> cellProperty = cell => cell.HasWater ? 1 : 0;
+                    Func<Cell, object> cellProperty = cell => cell.Coastline ? "o" : (cell.HasWater ? " " : "*");
+
+                    Console.WriteLine($"Block 2");
+                    ShowBlock(blocks[1], cellProperty);
+
+                    Console.WriteLine($"Block 5:");
+                    ShowBlock(blocks[4], cellProperty);
+
+                    Func<Cell, object> altitudeProperty = cell => cell.Altitude;
+
+                    Console.WriteLine($"Block 2");
+                    ShowBlock(blocks[1], altitudeProperty);
+
+                    Console.WriteLine($"Block 5:");
+                    ShowBlock(blocks[4], altitudeProperty);
 
                     Console.WriteLine("");
                     Console.WriteLine($"Current offset = {reader.BaseStream.Position}");
                     Console.WriteLine("");
 
-                    Console.WriteLine("Countries:");
+                    Console.WriteLine("Countries (counting from 1):");
 
                     Country[] countries;
                     var numberOfCountries = header.NumCountries;
 
                     countries = reader.ReadCountries(numberOfCountries);
 
-                    for (var i = 0; i < numberOfCountries; i++)
+                    for (var i = 1; i <= numberOfCountries; i++)
                     {
-                        Console.WriteLine($"Country[{i}]: TerrainType = {countries[i].TerrainType}");
+                        var country = countries[i - 1];
+                        Console.WriteLine($"Country[{i}]: Materials = ({country.MapMaterials[0].Index1}, {country.MapMaterials[0].Index2})");
                     }
 
                     Console.WriteLine("");
-                    Console.WriteLine($"Current offset = {reader.BaseStream.Position}");
+                    Console.WriteLine($"Current offset = {reader.BaseStream.Position:X}");
                     Console.WriteLine("");
 
                     Console.WriteLine("Materials:");
@@ -109,7 +139,7 @@ namespace Lndscaper
                     }
 
                     Console.WriteLine("");
-                    Console.WriteLine($"Current offset = {reader.BaseStream.Position}");
+                    Console.WriteLine($"Current offset = {reader.BaseStream.Position:X}");
                     Console.WriteLine("");
 
                     Console.WriteLine("Noise map:");
@@ -118,7 +148,7 @@ namespace Lndscaper
                     reader.Read(noiseMap, 0, noiseMap.Length);
 
                     Console.WriteLine("");
-                    Console.WriteLine($"Current offset = {reader.BaseStream.Position}");
+                    Console.WriteLine($"Current offset = {reader.BaseStream.Position:X}");
                     Console.WriteLine("");
 
                     Console.WriteLine("Bump map:");
@@ -127,15 +157,37 @@ namespace Lndscaper
                     reader.Read(bumpMap, 0, bumpMap.Length);
 
                     Console.WriteLine("");
-                    Console.WriteLine($"Current offset = {reader.BaseStream.Position}");
+                    Console.WriteLine($"Current offset = {reader.BaseStream.Position:X}");
 
                 }
             }
 
         }
 
-        private static void ShowMap(Block[] blocks, Func<Block, object> blockProperty = null)
+        private static void ShowBlock(Block block, Func<Cell, object> cellProperty = null)
         {
+            for (var i = 0; i < 17; i++)
+            {
+                for (var j = 0; j < 17; j++)
+                {
+                    if (cellProperty != null)
+                    {
+                        Console.Write(cellProperty(block.Cells[i * 17 + j]).ToString().PadRight(5));
+                    }
+                    else
+                    {
+                        Console.Write(block.Cells[i * 17 + j].Country.ToString().PadRight(5));
+                    }
+                        
+                }
+                Console.WriteLine();
+            }
+        }
+
+        private static void ShowMap(Block[] blocks, Func<Block, object> blockProperty = null, int width = 3)
+        {
+            string emptyBlock = "".PadRight(width);
+
             Block?[,] sortedBlocks = new Block?[32, 32];
 
             for (var i = 0; i < blocks.Length; i++)
@@ -143,23 +195,27 @@ namespace Lndscaper
                 sortedBlocks[blocks[i].BlockData.BlockX, blocks[i].BlockData.BlockY] = blocks[i];
             }
 
-            for (var i = 0; i < 32; i++)
+            Console.WriteLine("X:> Y:V");
+
+            for (var i = 0; i < 32; i++) // Y axis
             {
-                for (var j = 0; j < 32; j++)
+                for (var j = 0; j < 32; j++) // X axis
                 {
-                    if (sortedBlocks[i, j] == null)
+                    if (sortedBlocks[j, i] == null)
                     {
-                        Console.Write("    ");
+                        Console.Write(emptyBlock);
                     }
                     else
                     {
+                        var block = sortedBlocks[j, i].Value;
                         if (blockProperty != null)
                         {
-                            Console.Write($"{blockProperty(sortedBlocks[i, j].Value):d3} ");
+                            
+                            Console.Write(blockProperty(block).ToString().PadRight(width));
                         }
                         else
                         {
-                            Console.Write($"{sortedBlocks[i, j].Value.BlockData.Index:d3} ");
+                            Console.Write(block.BlockData.Index.ToString().PadRight(width));
                         }
                     }
                 }
