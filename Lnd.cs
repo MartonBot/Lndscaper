@@ -11,14 +11,12 @@ namespace Lndscaper
 
         public unsafe static void ShowLndFileInfo(string lndFileName)
         {
+
+            var fileSize = new FileInfo(lndFileName).Length;
+            Console.WriteLine($"File size: {fileSize} bytes");
+
             var header = Binary.FileToStructure<LndHeader>(lndFileName);
-            Console.WriteLine($"NumBlocks: {header.NumBlocks}");
-            Console.WriteLine($"NumMaterials: {header.NumMaterials}");
-            Console.WriteLine($"NumCountries: {header.NumCountries}");
-            Console.WriteLine($"BlockSize: {header.BlockSize}");
-            Console.WriteLine($"MaterialSize: {header.MaterialSize}");
-            Console.WriteLine($"CountrySize: {header.CountrySize}");
-            Console.WriteLine($"NumLoResTextures: {header.NumLoResTextures}");
+            DumpHeaderInfo(header);
 
             Console.WriteLine("");
 
@@ -67,8 +65,9 @@ namespace Lndscaper
                     blocks = reader.ReadBlocks(numberOfBlocks);
 
                     // dump block data to JSON
+
                     var block2 = blocks[1];
-                    File.WriteAllText("./Test files/land1.json", JsonSerializer.Serialize<Block>(block2, new JsonSerializerOptions
+                    File.WriteAllText("Test files/cells.json", JsonSerializer.Serialize<Block>(block2, new JsonSerializerOptions
                     {
                         IncludeFields = true,
                         WriteIndented = true
@@ -89,7 +88,7 @@ namespace Lndscaper
                     ShowMap(blocks);
 
                     // Func<Cell, object> cellProperty = cell => cell.HasWater ? 1 : 0;
-                    Func<Cell, object> cellProperty = cell => cell.Coastline ? "o" : (cell.HasWater ? " " : "*");
+                    Func<Cell, object> cellProperty = cell => cell.Split ? "/" : (cell.Coastline ? "o" : (cell.FullWater ? "-" : (cell.HasWater ? " " : "*")));
 
                     Console.WriteLine($"Block 2");
                     ShowBlock(blocks[1], cellProperty);
@@ -97,6 +96,7 @@ namespace Lndscaper
                     Console.WriteLine($"Block 5:");
                     ShowBlock(blocks[4], cellProperty);
 
+                    /*
                     Func<Cell, object> altitudeProperty = cell => cell.Altitude;
 
                     Console.WriteLine($"Block 2");
@@ -104,22 +104,32 @@ namespace Lndscaper
 
                     Console.WriteLine($"Block 5:");
                     ShowBlock(blocks[4], altitudeProperty);
+                    */
+
+                    Func<Cell, object> countryProperty = cell => cell.Country;
+                    Func<Cell, object> landProperty = cell => cell.LandProperties;
+
+                    Console.WriteLine($"Block 2");
+                    ShowBlock(blocks[1], countryProperty);
+
+                    Console.WriteLine($"Block 5:");
+                    ShowBlock(blocks[4], countryProperty);
 
                     Console.WriteLine("");
                     Console.WriteLine($"Current offset = {reader.BaseStream.Position}");
                     Console.WriteLine("");
 
-                    Console.WriteLine("Countries (counting from 1):");
+                    Console.WriteLine("Countries:");
 
                     Country[] countries;
                     var numberOfCountries = header.NumCountries;
 
                     countries = reader.ReadCountries(numberOfCountries);
 
-                    for (var i = 1; i <= numberOfCountries; i++)
+                    for (var i = 0; i < numberOfCountries; i++)
                     {
-                        var country = countries[i - 1];
-                        Console.WriteLine($"Country[{i}]: Materials = ({country.MapMaterials[0].Index1}, {country.MapMaterials[0].Index2})");
+                        var country = countries[i];
+                        Console.WriteLine($"Country[{i}]: Materials = ({country.MapMaterials[130].Index1}, {country.MapMaterials[130].Index2})");
                     }
 
                     Console.WriteLine("");
@@ -159,9 +169,22 @@ namespace Lndscaper
                     Console.WriteLine("");
                     Console.WriteLine($"Current offset = {reader.BaseStream.Position:X}");
 
+                    var leftToRead = fileSize - reader.BaseStream.Position;
+                    Console.WriteLine($"Left to read: {leftToRead:X}");
                 }
             }
 
+        }
+
+        private static unsafe void DumpHeaderInfo(LndHeader header)
+        {
+            Console.WriteLine($"NumBlocks: {header.NumBlocks}");
+            Console.WriteLine($"NumMaterials: {header.NumMaterials}");
+            Console.WriteLine($"NumCountries: {header.NumCountries}");
+            Console.WriteLine($"BlockSize: {header.BlockSize}");
+            Console.WriteLine($"MaterialSize: {header.MaterialSize}");
+            Console.WriteLine($"CountrySize: {header.CountrySize}");
+            Console.WriteLine($"NumLoResTextures: {header.NumLoResTextures}");
         }
 
         private static void ShowBlock(Block block, Func<Cell, object> cellProperty = null)

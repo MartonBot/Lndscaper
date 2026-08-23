@@ -6,6 +6,7 @@ namespace Lndscaper
     {
         static void Main(string[] args)
         {
+            // Lnd.ShowLndFileInfo("./Test files/Land3.lnd");
             Lnd.ShowLndFileInfo("./Test files/Land1.lnd");
             // Lnd.ShowLndFileInfo("./Test files/02test-1blockor2.lnd");
             // Bitmap.BmpToRaw("./Test files/02-test_1blockor2.bmp");
