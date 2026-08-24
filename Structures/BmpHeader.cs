@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lndscaper
+namespace Lndscaper.Structures
 {
     struct BmpHeader // 14 bytes long
     {

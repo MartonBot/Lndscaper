@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Lndscaper
+namespace Lndscaper.Structures
 {
     struct LndHeader
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lndscaper
+namespace Lndscaper.Structures
 {
     // all the data in a Block, except for the array of cells
     unsafe struct BlockData
