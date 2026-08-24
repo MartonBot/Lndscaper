@@ -1,5 +1,6 @@
 ﻿using Lndscaper.Structures;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -8,6 +9,23 @@ namespace Lndscaper
 {
     class Lnd
     {
+        private LndHeader header;
+        private readonly List<LoResTexture> lowresTextures = [];
+
+        public void Read(string filename)
+        {
+            using FileStream fs = new(filename, FileMode.Open, FileAccess.Read);
+            using BinaryReader reader = new(fs);
+            header.Read(reader);
+            for (int i = 0; i < header.NumLoResTextures; i++)
+            {
+                Console.WriteLine($"Reading texture {i}...");
+                LoResTexture texture = new();
+                texture.Read(reader);
+                lowresTextures.Add(texture);
+            }
+
+        }
 
         public unsafe static void ShowLndFileInfo(string lndFileName)
         {
@@ -21,7 +39,7 @@ namespace Lndscaper
             Console.WriteLine("");
 
             Console.WriteLine($"LND header size: {sizeof(LndHeader)} bytes");
-            Console.WriteLine($"Lo-res textures: {header.NumLoResTextures} x ({sizeof(LoResTextureHeader)} + (lo-res texture data size)) bytes");
+            Console.WriteLine($"Lo-res textures: {header.NumLoResTextures} x ({sizeof(LoResTexture)} + (lo-res texture data size)) bytes");
 
             int offset = sizeof(LndHeader);
 
@@ -29,11 +47,11 @@ namespace Lndscaper
 
             Console.WriteLine("Lo-res textures:");
 
-            LoResTextureHeader loResTextureHeader;
+            LoResTexture loResTextureHeader;
             for (var i = 0; i < header.NumLoResTextures; i++)
             {
-                loResTextureHeader = Binary.FileToStructure<LoResTextureHeader>(lndFileName, offset);
-                offset += sizeof(LoResTextureHeader) + (loResTextureHeader.Size - 4); // after the lo-res header come (loResTextureHeader.Size - 4) of DirectDraw stuff
+                loResTextureHeader = Binary.FileToStructure<LoResTexture>(lndFileName, offset);
+                offset += sizeof(LoResTexture) + (loResTextureHeader.Size - 4); // after the lo-res header come (loResTextureHeader.Size - 4) of DirectDraw stuff
                 // somehow, the value that is read for the size of the lo-res texture data is not accurate, you have to remove 4 bytes from it. I guess just accept that
                 Console.WriteLine($"Lo-res texture[{i}]:");
                 // Console.WriteLine($"\ttexture pointer == {loResTextureHeader.Texture}");
@@ -201,7 +219,7 @@ namespace Lndscaper
                     {
                         Console.Write(block.Cells[i * 17 + j].Country.ToString().PadRight(5));
                     }
-                        
+
                 }
                 Console.WriteLine();
             }
@@ -233,7 +251,7 @@ namespace Lndscaper
                         var block = sortedBlocks[j, i].Value;
                         if (blockProperty != null)
                         {
-                            
+
                             Console.Write(blockProperty(block).ToString().PadRight(width));
                         }
                         else
