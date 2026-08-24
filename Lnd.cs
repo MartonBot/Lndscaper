@@ -1,7 +1,4 @@
 ﻿using Lndscaper.Structures;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Text.Json;
 
@@ -34,19 +31,20 @@ namespace Lndscaper
                 block.Read(reader);
                 blocks.Add(block);
             }
-            for (int i = 0; i < header.NumCountries; i++) {
+            for (int i = 0; i < header.NumCountries; i++)
+            {
                 Console.WriteLine($"Reading country {i}...");
-				Country country = new();
-				country.Read(reader);
-				countries.Add(country);
-			}
-            for (int i = 0; i < header.NumMaterials; i++) {
+                Country country = new();
+                country.Read(reader);
+                countries.Add(country);
+            }
+            for (int i = 0; i < header.NumMaterials; i++)
+            {
                 Console.WriteLine($"Reading material {i}...");
-				Material material = new();
-				material.Read(reader);
-				materials.Add(material);
-			}
-
+                Material material = new();
+                material.Read(reader);
+                materials.Add(material);
+            }
         }
 
         public unsafe static void ShowLndFileInfo(string lndFileName)
@@ -288,4 +286,6 @@ namespace Lndscaper
 
 
     }
+
+    public sealed record ParseResult(string FileName, int Textures, int Blocks, int Countries, int Materials);
 }
