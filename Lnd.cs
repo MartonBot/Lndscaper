@@ -11,6 +11,7 @@ namespace Lndscaper
     {
         private LndHeader header;
         private readonly List<LoResTexture> lowresTextures = [];
+        private readonly List<Block> blocks = [];
 
         public void Read(string filename)
         {
@@ -23,6 +24,13 @@ namespace Lndscaper
                 LoResTexture texture = new();
                 texture.Read(reader);
                 lowresTextures.Add(texture);
+            }
+            for (int i = 1; i <= header.NumBlocks - 1; i++)
+            {
+                Console.WriteLine($"Reading block {i}...");
+                Block block = new();
+                block.Read(reader);
+                blocks.Add(block);
             }
 
         }

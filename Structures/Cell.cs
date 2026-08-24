@@ -1,11 +1,12 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.IO;
+using System.Text.Json.Serialization;
 
 namespace Lndscaper.Structures
 {
-    unsafe struct Cell
+    struct Cell
     {
         [JsonIgnore]
-        public fixed byte Color[4];
+        public byte[] Color = new byte[4];
         [JsonIgnore]
         public byte Altitude;
         [JsonIgnore]
@@ -21,5 +22,21 @@ namespace Lndscaper.Structures
         public bool Coastline => (LandProperties & (1 << 5)) != 0;
         public bool FullWater => (LandProperties & (1 << 6)) != 0;
         public bool Split => (LandProperties & (1 << 7)) != 0;
+
+        public Cell()
+        {
+        }
+
+        public void Read(BinaryReader reader)
+        {
+            Color[0] = reader.ReadByte();
+            Color[1] = reader.ReadByte();
+            Color[2] = reader.ReadByte();
+            Color[3] = reader.ReadByte();
+            Altitude = reader.ReadByte();
+            SaveColor = reader.ReadByte();
+            LandProperties = reader.ReadByte();
+            SoundProperties = reader.ReadByte();
+        }
     }
 }
