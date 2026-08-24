@@ -50,7 +50,7 @@ namespace Lndscaper
 
             for (var i = 0; i < numCountries; i++)
             {
-                countries[i].TerrainType = ReadUInt32();
+                //countries[i].TerrainType = ReadUInt32();
                 countries[i].MapMaterials = ReadStructArray<MapMaterial>(MapMaterialsPerCountry);
             }
 

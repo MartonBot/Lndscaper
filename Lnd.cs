@@ -13,6 +13,7 @@ namespace Lndscaper
         private readonly List<LoResTexture> lowresTextures = [];
         private readonly List<Block> blocks = [];
         private readonly List<Country> countries = [];
+        private readonly List<Material> materials = [];
 
         public void Read(string filename)
         {
@@ -38,6 +39,12 @@ namespace Lndscaper
 				Country country = new();
 				country.Read(reader);
 				countries.Add(country);
+			}
+            for (int i = 0; i < header.NumMaterials; i++) {
+                Console.WriteLine($"Reading material {i}...");
+				Material material = new();
+				material.Read(reader);
+				materials.Add(material);
 			}
 
         }
