@@ -1,4 +1,5 @@
 ﻿using Lndscaper;
+using Lndscaper.Structures;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -50,6 +51,12 @@ app.MapPost("/parse", async (IFormFile? file) =>
                                 material = texture.Material,
                                 numSubTextures = texture.NumSubTextures,
                                 size = texture.Size
+                        }),
+                        materials = lnd.Materials.Select((material, index) => new
+                        {
+                                index,
+                                terrainType = material.TerrainType,
+                                image = MaterialImageDataUrl(material)
                         })
                 });
         }
@@ -64,3 +71,11 @@ app.MapPost("/parse", async (IFormFile? file) =>
 }).DisableAntiforgery();
 
 app.Run();
+
+static string MaterialImageDataUrl(Material material)
+{
+        using var image = material.GetImage();
+        using var stream = new MemoryStream();
+        image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+        return $"data:image/png;base64,{Convert.ToBase64String(stream.ToArray())}";
+}
