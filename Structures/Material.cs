@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace Lndscaper.Structures
+﻿namespace Lndscaper.Structures
 {
     struct Material
     {

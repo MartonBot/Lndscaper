@@ -11,7 +11,7 @@ namespace Lndscaper.Structures
         public int NumSubTextures;
         public int ID;
         public int Size;
-        private DDSTexture ddsTexture = new();
+        public DDSTexture ddsTexture = new();
 
         public LoResTexture()
         {

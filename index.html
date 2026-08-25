@@ -18,6 +18,19 @@
         #status { margin-top: 26px; white-space: pre-wrap; }
         dl { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin-top: 18px; background: #a8b9a2; }
         dt, dd { margin: 0; padding: 12px; background: #f8faf3; } dt { font-weight: bold; } dd { text-align: right; }
+        #blocks-toggle { padding: 0; border: 0; margin: 0; background: transparent; color: inherit; font: inherit; font-weight: bold; cursor: pointer; }
+        #blocks-toggle::after { content: '+'; display: inline-block; margin-left: 8px; color: #d7603f; }
+        #blocks-toggle[aria-expanded="true"]::after { content: '-'; }
+        #block-list { grid-column: 1 / -1; padding: 12px; background: #f8faf3; text-align: left; }
+        #block-list ul { columns: 2; margin: 0; padding-left: 20px; }
+        #block-list li { padding: 3px 0; }
+        #textures-toggle { padding: 0; border: 0; margin: 0; background: transparent; color: inherit; font: inherit; font-weight: bold; cursor: pointer; }
+        #textures-toggle::after { content: '+'; display: inline-block; margin-left: 8px; color: #d7603f; }
+        #textures-toggle[aria-expanded="true"]::after { content: '-'; }
+        #texture-list { grid-column: 1 / -1; padding: 12px; background: #f8faf3; text-align: left; }
+        #texture-list ul { columns: 2; margin: 0; padding-left: 20px; }
+        #texture-list li { padding: 3px 0; }
+        @media (max-width: 520px) { #block-list ul, #texture-list ul { columns: 1; } }
     </style>
 </head>
 <body>
@@ -30,21 +43,77 @@
             <button type="submit">Read LND file</button>
         </form>
         <section id="status" aria-live="polite"></section>
+        <dl id="header-info" hidden>
+            <dt><button id="blocks-toggle" type="button" aria-expanded="false" aria-controls="block-list">Blocks</button></dt><dd data-field="numBlocks"></dd>
+            <dt>Materials</dt><dd data-field="numMaterials"></dd>
+            <dt>Countries</dt><dd data-field="numCountries"></dd>
+            <dt>Block size</dt><dd data-field="blockSize"></dd>
+            <dt>Material size</dt><dd data-field="materialSize"></dd>
+            <dt>Country size</dt><dd data-field="countrySize"></dd>
+            <dt><button id="textures-toggle" type="button" aria-expanded="false" aria-controls="texture-list">Low-res textures</button></dt><dd data-field="numLoResTextures"></dd>
+            <dd id="block-list" hidden></dd>
+            <dd id="texture-list" hidden></dd>
+        </dl>
     </main>
     <script>
         const form = document.querySelector('#parser-form');
         const file = document.querySelector('#file');
         const button = form.querySelector('button');
         const status = document.querySelector('#status');
+        const headerInfo = document.querySelector('#header-info');
+        const blocksToggle = document.querySelector('#blocks-toggle');
+        const blockList = document.querySelector('#block-list');
+        const texturesToggle = document.querySelector('#textures-toggle');
+        const textureList = document.querySelector('#texture-list');
+        let blocks = [];
+        let loResTextures = [];
+
+        blocksToggle.addEventListener('click', () => {
+            const expanded = blocksToggle.getAttribute('aria-expanded') === 'true';
+            blocksToggle.setAttribute('aria-expanded', String(!expanded));
+            blockList.hidden = expanded;
+        });
+
+        texturesToggle.addEventListener('click', () => {
+            const expanded = texturesToggle.getAttribute('aria-expanded') === 'true';
+            texturesToggle.setAttribute('aria-expanded', String(!expanded));
+            textureList.hidden = expanded;
+        });
+
+        function renderBlocks() {
+            blockList.innerHTML = blocks.length
+                ? `<ul>${blocks.map((block) => `<li>Block ${block.index}: (${block.blockX}, ${block.blockY})</li>`).join('')}</ul>`
+                : '<p>No blocks found.</p>';
+        }
+
+        function renderTextures() {
+            textureList.innerHTML = loResTextures.length
+                ? `<ul>${loResTextures.map((texture) => `<li>Texture ${texture.id}: material ${texture.material}, ${texture.numSubTextures} sub-textures (${texture.size} bytes)</li>`).join('')}</ul>`
+                : '<p>No low-res textures found.</p>';
+        }
+
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
             if (!file.files.length) return;
             button.disabled = true;
             status.textContent = 'Parsing...';
+            headerInfo.hidden = true;
+            blocksToggle.setAttribute('aria-expanded', 'false');
+            blockList.hidden = true;
+            texturesToggle.setAttribute('aria-expanded', 'false');
+            textureList.hidden = true;
             try {
                 const response = await fetch('/parse', { method: 'POST', body: new FormData(form) });
-                const data = await response.statusText;
+                const data = await response.json();
                 if (!response.ok) throw new Error(data.error);
+                headerInfo.querySelectorAll('[data-field]').forEach((field) => {
+                    field.textContent = data.header[field.dataset.field];
+                });
+                blocks = data.blocks;
+                loResTextures = data.loResTextures;
+                renderBlocks();
+                renderTextures();
+                headerInfo.hidden = false;
                 status.innerHTML = `<p>File parsed successfully.</p>`;
             } catch (error) { status.textContent = error.message; }
             finally { button.disabled = false; }

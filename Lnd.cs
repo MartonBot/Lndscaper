@@ -6,44 +6,44 @@ namespace Lndscaper
 {
     class Lnd
     {
-        private LndHeader header;
-        private readonly List<LoResTexture> lowresTextures = [];
-        private readonly List<Block> blocks = [];
-        private readonly List<Country> countries = [];
-        private readonly List<Material> materials = [];
+        public LndHeader Header;
+        public readonly List<LoResTexture> LoResTextures = [];
+        public readonly List<Block> Blocks = [];
+        public readonly List<Country> Countries = [];
+        public readonly List<Material> Materials = [];
 
         public void Read(string filename)
         {
             using FileStream fs = new(filename, FileMode.Open, FileAccess.Read);
             using BinaryReader reader = new(fs);
-            header.Read(reader);
-            for (int i = 0; i < header.NumLoResTextures; i++)
+            Header.Read(reader);
+            for (int i = 0; i < Header.NumLoResTextures; i++)
             {
                 Console.WriteLine($"Reading texture {i}...");
                 LoResTexture texture = new();
                 texture.Read(reader);
-                lowresTextures.Add(texture);
+                LoResTextures.Add(texture);
             }
-            for (int i = 1; i <= header.NumBlocks - 1; i++)
+            for (int i = 1; i <= Header.NumBlocks - 1; i++)
             {
                 Console.WriteLine($"Reading block {i}...");
                 Block block = new();
                 block.Read(reader);
-                blocks.Add(block);
+                Blocks.Add(block);
             }
-            for (int i = 0; i < header.NumCountries; i++)
+            for (int i = 0; i < Header.NumCountries; i++)
             {
                 Console.WriteLine($"Reading country {i}...");
                 Country country = new();
                 country.Read(reader);
-                countries.Add(country);
+                Countries.Add(country);
             }
-            for (int i = 0; i < header.NumMaterials; i++)
+            for (int i = 0; i < Header.NumMaterials; i++)
             {
                 Console.WriteLine($"Reading material {i}...");
                 Material material = new();
                 material.Read(reader);
-                materials.Add(material);
+                Materials.Add(material);
             }
         }
 

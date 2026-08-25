@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Lndscaper;
+﻿using Lndscaper;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -25,7 +23,25 @@ app.MapPost("/parse", async (IFormFile? file) =>
                 var lnd = new Lnd();
                 lnd.Read(temporaryFile);
 
-                return Results.Ok();
+                return Results.Ok(new
+                {
+                        header = lnd.Header,
+                        blocks = lnd.Blocks.Select(block => new
+                        {
+                                index = block.BlockData.Index,
+                                blockX = block.BlockData.BlockX,
+                                blockY = block.BlockData.BlockY,
+                                mapX = block.BlockData.MapX,
+                                mapY = block.BlockData.MapY
+                        }),
+                        loResTextures = lnd.LoResTextures.Select(texture => new
+                        {
+                                id = texture.ID,
+                                material = texture.Material,
+                                numSubTextures = texture.NumSubTextures,
+                                size = texture.Size
+                        })
+                });
         }
         catch (Exception exception) when (exception is IOException or InvalidDataException or EndOfStreamException)
         {
