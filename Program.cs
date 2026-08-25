@@ -1,5 +1,6 @@
 ﻿using Lndscaper;
 using Lndscaper.Structures;
+using SixLabors.ImageSharp.Formats.Png;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -76,6 +77,6 @@ static string MaterialImageDataUrl(Material material)
 {
         using var image = material.GetImage();
         using var stream = new MemoryStream();
-        image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+        image.Save(stream, new PngEncoder());
         return $"data:image/png;base64,{Convert.ToBase64String(stream.ToArray())}";
 }

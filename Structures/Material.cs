@@ -1,5 +1,5 @@
-﻿using System.Drawing;
-using System.Drawing.Imaging;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Lndscaper.Structures
 {
@@ -21,11 +21,11 @@ namespace Lndscaper.Structures
             }
         }
 
-        public System.Drawing.Bitmap GetImage()
+        public Image<Rgba32> GetImage()
         {
             var width = 256;
             var height = 256;
-            System.Drawing.Bitmap image = new System.Drawing.Bitmap(width, height, PixelFormat.Format32bppArgb);
+            var image = new Image<Rgba32>(width, height);
 
             for (int i = 0; i < Images.Length; i++)
             {
@@ -50,7 +50,7 @@ namespace Lndscaper.Structures
                 int x = i % width;
                 int y = i / width;
 
-                image.SetPixel(x, y, Color.FromArgb(alpha, red, green, blue));
+                image[x, y] = new Rgba32((byte)red, (byte)green, (byte)blue, (byte)alpha);
             }
 
             return image;
