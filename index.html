@@ -21,9 +21,10 @@
         #blocks-toggle { padding: 0; border: 0; margin: 0; background: transparent; color: inherit; font: inherit; font-weight: bold; cursor: pointer; }
         #blocks-toggle::after { content: '+'; display: inline-block; margin-left: 8px; color: #d7603f; }
         #blocks-toggle[aria-expanded="true"]::after { content: '-'; }
-        #block-list { grid-column: 1 / -1; padding: 12px; background: #f8faf3; text-align: left; }
-        #block-list ul { columns: 2; margin: 0; padding-left: 20px; }
-        #block-list li { padding: 3px 0; }
+        #block-list { grid-column: 1 / -1; padding: 12px; background: #f8faf3; text-align: left; overflow-x: auto; }
+        #block-grid { display: grid; grid-template-columns: repeat(32, minmax(24px, 1fr)); grid-template-rows: repeat(32, minmax(24px, 1fr)); gap: 2px; min-width: 768px; aspect-ratio: 1; }
+        #block-grid span { display: grid; min-width: 0; min-height: 0; place-items: center; border: 1px solid #dce4d9; background: #f8faf3; color: #19302b; font: bold .7rem Georgia, serif; }
+        #block-grid span[data-block-id] { border-color: #a8b9a2; background: #dce8d5; }
         #textures-toggle { padding: 0; border: 0; margin: 0; background: transparent; color: inherit; font: inherit; font-weight: bold; cursor: pointer; }
         #textures-toggle::after { content: '+'; display: inline-block; margin-left: 8px; color: #d7603f; }
         #textures-toggle[aria-expanded="true"]::after { content: '-'; }
@@ -51,7 +52,7 @@
             <dt>Material size</dt><dd data-field="materialSize"></dd>
             <dt>Country size</dt><dd data-field="countrySize"></dd>
             <dt><button id="textures-toggle" type="button" aria-expanded="false" aria-controls="texture-list">Low-res textures</button></dt><dd data-field="numLoResTextures"></dd>
-            <dd id="block-list" hidden></dd>
+            <dd id="block-list" hidden><div id="block-grid" role="grid" aria-label="Blocks by coordinates"></div></dd>
             <dd id="texture-list" hidden></dd>
         </dl>
     </main>
@@ -63,6 +64,7 @@
         const headerInfo = document.querySelector('#header-info');
         const blocksToggle = document.querySelector('#blocks-toggle');
         const blockList = document.querySelector('#block-list');
+        const blockGrid = document.querySelector('#block-grid');
         const texturesToggle = document.querySelector('#textures-toggle');
         const textureList = document.querySelector('#texture-list');
         let blocks = [];
@@ -81,9 +83,13 @@
         });
 
         function renderBlocks() {
-            blockList.innerHTML = blocks.length
-                ? `<ul>${blocks.map((block) => `<li>Block ${block.index}: (${block.blockX}, ${block.blockY})</li>`).join('')}</ul>`
-                : '<p>No blocks found.</p>';
+            const cells = Array.from({ length: 32 * 32 }, () => '<span></span>');
+            blocks.forEach((block) => {
+                if (block.blockX >= 0 && block.blockX < 32 && block.blockY >= 0 && block.blockY < 32) {
+                    cells[block.blockY * 32 + block.blockX] = `<span data-block-id title="Block ${block.index} at (${block.blockX}, ${block.blockY})">${block.index}</span>`;
+                }
+            });
+            blockGrid.innerHTML = cells.join('');
         }
 
         function renderTextures() {
