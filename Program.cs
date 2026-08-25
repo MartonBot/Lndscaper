@@ -32,7 +32,17 @@ app.MapPost("/parse", async (IFormFile? file) =>
                                 blockX = block.BlockData.BlockX,
                                 blockY = block.BlockData.BlockY,
                                 mapX = block.BlockData.MapX,
-                                mapY = block.BlockData.MapY
+                                mapY = block.BlockData.MapY,
+                                cells = block.Cells.Select(cell => new
+                                {
+                                        color = cell.Color,
+                                        altitude = cell.Altitude,
+                                        country = cell.Country,
+                                        hasWater = cell.HasWater,
+                                        coastline = cell.Coastline,
+                                        fullWater = cell.FullWater,
+                                        split = cell.Split
+                                })
                         }),
                         loResTextures = lnd.LoResTextures.Select(texture => new
                         {
